@@ -33,31 +33,31 @@
         <section id="tab-dispensa" class="tab-content active space-y-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
                 <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                    <i class="fa-solid fa-camera text-emerald-600"></i> Scansiona con Fotocamera
+                    <i class="fa-solid fa-camera text-emerald-600"></i> Scansione con Fotocamera
                 </h2>
                 
-                <p class="text-xs text-gray-500 font-medium">Tocca uno dei due tasti per scattare una foto:</p>
+                <p class="text-xs text-gray-500 font-medium">Tocca uno dei due tasti per aprire la fotocamera:</p>
 
-                <!-- I 2 PULSANTI FOTOCAMERA DIRETTI E NATIVI -->
+                <!-- I 2 PULSANTI FOTOCAMERA DIRETTI E FUNZIONANTI -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     
                     <!-- 1. FOTOCAMERA SCONTRINO -->
                     <label class="bg-emerald-600 text-white p-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3 cursor-pointer shadow-md active:scale-95 transition">
                         <i class="fa-solid fa-receipt text-2xl"></i>
                         <span class="text-base">Scatta Foto Scontrino</span>
-                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processPhoto(event, 'scontrino')">
+                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleCapture(event, 'scontrino')">
                     </label>
 
                     <!-- 2. FOTOCAMERA PRODOTTO/DISPENSA -->
                     <label class="bg-blue-600 text-white p-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3 cursor-pointer shadow-md active:scale-95 transition">
                         <i class="fa-solid fa-camera text-2xl"></i>
                         <span class="text-base">Scatta Foto Prodotto</span>
-                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="processPhoto(event, 'prodotto')">
+                        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleCapture(event, 'prodotto')">
                     </label>
 
                 </div>
 
-                <!-- Modale Inserimento Manuale Veloce (Opzionale) -->
+                <!-- Modale Inserimento Manuale Veloce -->
                 <details class="text-xs text-gray-600 pt-2 border-t">
                     <summary class="font-semibold cursor-pointer py-1 text-emerald-600">+ Oppure inserisci a mano</summary>
                     <form id="addItemForm" onsubmit="addPantryItem(event)" class="grid grid-cols-1 gap-2 mt-2">
@@ -87,42 +87,4 @@
                 <h2 class="text-base font-bold text-gray-800 mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-utensils text-emerald-600"></i> Ricette Consigliate
                 </h2>
-                <p class="text-xs text-gray-500 mb-3">Porzioni calcolate per Martino (Sleeve), Valentina e Camilla.</p>
-                <div id="recipesContainer" class="space-y-3"></div>
-            </div>
-        </section>
-
-        <!-- TAB 3: MENU SETTIMANALE -->
-        <section id="tab-menu" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-days text-emerald-600"></i> Menu Settimanale
-                    </h2>
-                    <button onclick="generateWeeklyMenu()" class="bg-emerald-600 text-white text-xs px-2.5 py-1.5 rounded-lg font-bold">⚡ Rigenera</button>
-                </div>
-                <div id="weeklyMenuContainer" class="space-y-2"></div>
-            </div>
-        </section>
-
-        <!-- TAB 4: SPESA -->
-        <section id="tab-spesa" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-cart-shopping text-emerald-600"></i> Lista Spesa
-                </h2>
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="shoppingInput" placeholder="Aggiungi prodotto..." class="border p-2 rounded-lg text-sm flex-1 bg-gray-50">
-                    <button onclick="addShoppingItem()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-bold">+</button>
-                </div>
-                <div id="shoppingListContainer" class="space-y-2"></div>
-            </div>
-        </section>
-
-        <!-- TAB 5: OFFERTE -->
-        <section id="tab-offerte" class="tab-content space-y-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <h2 class="text-base font-bold text-gray-800 mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-tags text-red-600"></i> Offerte Esselunga
-                </h2>
-                <p class="text-xs text-gray-5
+                <p class="text
