@@ -56,34 +56,54 @@
         <span id="successText">Operazione completata!</span>
     </div>
 
-    <!-- WIZARD POP-UP VOCALE INSERIMENTO DISPENSA -->
+    <!-- WIZARD VOCALE / INTERATTIVO INSERIMENTO DISPENSA -->
     <div id="voiceWizardModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-4 text-center shadow-2xl border-4 border-emerald-500 relative">
+            
             <div id="wizardStepHeader" class="space-y-1">
                 <span id="stepBadge" class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase">PASSO 1 DI 4</span>
                 <h3 id="stepTitle" class="text-xl font-black text-gray-800 pt-1">Detti il NOME del prodotto</h3>
-                <p id="stepSubtitle" class="text-[11px] text-gray-500 font-semibold">Dì "SALTA" per saltare un passaggio</p>
+                <p id="stepSubtitle" class="text-[11px] text-gray-500 font-semibold">Dì "SALTA" per saltare</p>
             </div>
 
-            <div class="py-1">
+            <!-- STEP 1 & 2: VOCALE -->
+            <div id="wizardVoiceContainer" class="py-1">
                 <button id="wizardMicBtn" onclick="listenCurrentStep()" class="w-24 h-24 bg-red-600 text-white rounded-full flex flex-col items-center justify-center mx-auto shadow-2xl active:scale-95 transition">
                     <i id="wizardMicIcon" class="fa-solid fa-microphone text-3xl"></i>
                     <span class="text-[9px] uppercase font-bold mt-1">Tocca & Parla</span>
                 </button>
+                <div class="bg-gray-50 p-3 rounded-2xl border-2 border-gray-200 min-h-[50px] flex items-center justify-center mt-3">
+                    <p id="stepValue" class="text-sm font-black text-emerald-700">In attesa della voce...</p>
+                </div>
             </div>
 
-            <div class="bg-gray-50 p-3 rounded-2xl border-2 border-gray-200 min-h-[50px] flex items-center justify-center">
-                <p id="stepValue" class="text-sm font-black text-emerald-700">In attesa della voce...</p>
+            <!-- STEP 3: CALENDARIO SCADENZA -->
+            <div id="wizardCalendarContainer" class="hidden space-y-3 py-2">
+                <input type="date" id="wizardCalendarInput" class="w-full border-2 border-emerald-500 p-3 rounded-2xl text-base font-bold bg-gray-50">
+                <button onclick="confirmCalendarDate()" class="w-full bg-emerald-600 text-white py-3 rounded-2xl font-black text-sm">Conferma Scadenza</button>
             </div>
 
-            <div class="flex gap-2 pt-1">
+            <!-- STEP 4: SELETTORE NUMERI DA 1 A 10 (PEZZI) + FREEZER -->
+            <div id="wizardNumbersContainer" class="hidden space-y-3 py-1">
+                <p class="text-xs font-bold text-gray-600">Seleziona il numero di pezzi:</p>
+                <div class="grid grid-cols-5 gap-2" id="numberGrid">
+                    <!-- Generato via JS -->
+                </div>
+                <div class="flex items-center gap-2 pt-2 bg-blue-50 p-3 rounded-xl border border-blue-200 text-left">
+                    <input type="checkbox" id="wizardFreezerCheck" class="w-5 h-5 text-blue-600 rounded">
+                    <label for="wizardFreezerCheck" class="text-xs font-bold text-blue-900 cursor-pointer">❄️ Conservato in Freezer (Avvisa per scongelare)</label>
+                </div>
+            </div>
+
+            <!-- Tasti di Controllo -->
+            <div class="flex gap-2 pt-1" id="wizardFooterBtns">
                 <button onclick="cancelVoiceWizard()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-black text-xs">Chiudi</button>
-                <button onclick="skipWizardStep()" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-black text-xs">⏭️ Salva & Salta</button>
+                <button onclick="skipWizardStep()" id="skipStepBtn" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-black text-xs">⏭️ Salta</button>
             </div>
         </div>
     </div>
 
-    <!-- POP-UP MODIFICA SINGOLO PRODOTTO IN DISPENSA -->
+    <!-- MODALE MODIFICA SINGOLO PRODOTTO -->
     <div id="editPantryModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
             <h3 class="font-black text-lg text-gray-800 flex items-center gap-2">
@@ -96,7 +116,7 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="text-xs font-bold text-gray-600">Quantità Singola</label>
+                    <label class="text-xs font-bold text-gray-600">Quantità</label>
                     <input type="text" id="editPantryQty" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
                 </div>
                 <div>
@@ -108,29 +128,32 @@
                 <label class="text-xs font-bold text-gray-600">Data Scadenza</label>
                 <input type="date" id="editPantryExpiry" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
             </div>
+            <div class="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="editPantryFreezer" class="w-4 h-4 text-blue-600 rounded">
+                <label for="editPantryFreezer" class="text-xs font-bold text-gray-700">Conservato in Freezer</label>
+            </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeEditPantryModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Annulla</button>
-                <button onclick="saveEditPantry()" class="px-5 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl">Salva Modifiche</button>
+                <button onclick="saveEditPantry()" class="px-5 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl">Salva</button>
             </div>
         </div>
     </div>
 
-    <!-- POP-UP MODIFICA PASTO CUCINATO (Sostituzione e rimozione cibi usati) -->
+    <!-- MODALE CAMBIO PASTO -->
     <div id="customMealModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
             <h3 class="font-black text-lg text-gray-800 flex items-center gap-2">
-                <i class="fa-solid fa-utensils text-blue-600"></i> Cosa hai cucinato invece?
+                <i class="fa-solid fa-utensils text-blue-600"></i> Cosa hai cucinato?
             </h3>
-            <p class="text-xs text-gray-500">I cibi che indichi verranno automaticamente rimossi dalla dispensa.</p>
+            <p class="text-xs text-gray-500">Gli ingredienti indicati verranno scalati dalla dispensa.</p>
             <input type="hidden" id="customMealDayIndex">
-            <input type="hidden" id="customMealType"> <!-- lunch o dinner -->
+            <input type="hidden" id="customMealType">
             <div>
-                <label class="text-xs font-bold text-gray-600">Descrizione del Pasto Cucinato</label>
                 <input type="text" id="customMealDesc" placeholder="Es. Pasta con passata e mozzarella" class="w-full border p-3 rounded-xl text-sm bg-gray-50">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeCustomMealModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Annulla</button>
-                <button onclick="confirmCustomMeal()" class="px-5 py-2 bg-blue-600 text-white text-xs font-black rounded-xl">Conferma & Aggiorna Dispensa</button>
+                <button onclick="confirmCustomMeal()" class="px-5 py-2 bg-blue-600 text-white text-xs font-black rounded-xl">Conferma</button>
             </div>
         </div>
     </div>
@@ -138,7 +161,7 @@
     <!-- CONTAINER PRINCIPALE APPLICATIVO -->
     <main class="p-4 max-w-md mx-auto space-y-4">
 
-        <!-- TAB 1: DISPENSA & FRIGO -->
+        <!-- TAB 1: DISPENSA & FRIGO (DIVISA PER CATEGORIE) -->
         <section id="tab-dispensa" class="tab-content active space-y-4">
             
             <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
@@ -148,21 +171,8 @@
 
                 <button onclick="startVoiceWizard()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-4 px-4 rounded-2xl font-black text-base flex items-center justify-center gap-3 shadow-lg active:scale-95 transition">
                     <i class="fa-solid fa-microphone text-2xl"></i>
-                    <span>🎙️ Inserimento Vocale Guidato</span>
+                    <span>🎙️ Inserimento Vocale Rapido</span>
                 </button>
-
-                <details class="text-xs text-gray-500">
-                    <summary class="font-bold cursor-pointer py-1 text-emerald-600 text-xs">+ Oppure inserisci a mano</summary>
-                    <form id="addItemForm" onsubmit="addPantryItemManual(event)" class="space-y-2.5 pt-2">
-                        <input type="text" id="itemName" placeholder="Nome Prodotto (es. Mozzarella)" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="itemQty" placeholder="Quantità (es. 100g)" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
-                            <input type="number" id="itemPezzi" placeholder="N° Pezzi (es. 2)" min="1" value="1" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
-                        </div>
-                        <input type="date" id="itemExpiry" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
-                        <button type="submit" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-black text-xs shadow">Salva in Dispensa</button>
-                    </form>
-                </details>
             </div>
 
             <!-- PRODOTTI APERTI -->
@@ -176,15 +186,15 @@
                 <div id="openedProductsList" class="space-y-2"></div>
             </div>
 
-            <!-- LISTA DISPENSA COMPLETA CON TASTO MODIFICA -->
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-black text-gray-800 text-base uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-boxes-packing text-emerald-600"></i> Dispensa (<span id="pantryCount">0</span>)
-                    </h3>
+            <!-- DISPENSA DIVISA PER CATEGORIE -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <h3 class="font-black text-gray-800 text-base uppercase">Dispensa per Aree (<span id="pantryCount">0</span>)</h3>
                     <button onclick="clearPantry()" class="text-xs text-red-500 font-black hover:underline">Svuota tutto</button>
                 </div>
-                <div id="pantryList" class="space-y-2.5"></div>
+
+                <!-- CATEGORIE CONTAINER -->
+                <div id="categoriesContainer" class="space-y-3"></div>
             </div>
         </section>
 
@@ -198,7 +208,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: MENU SETTIMANALE CON SPUNTE DI CONFERMA PASTO -->
+        <!-- TAB 3: MENU SETTIMANALE & SCONGELAMENTO -->
         <section id="tab-menu" class="tab-content space-y-4">
             <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
                 <div class="flex justify-between items-center">
@@ -208,7 +218,7 @@
                     <button onclick="generateWeeklyMenu()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-xl font-black">⚡ Rigenera</button>
                 </div>
 
-                <p class="text-xs text-gray-500 font-semibold">Metti la spunta quando consumi un pasto per scalare gli ingredienti dalla dispensa:</p>
+                <p class="text-xs text-gray-500 font-semibold">Metti la spunta quando consumi un pasto per scalare gli ingredienti:</p>
 
                 <div id="weeklyMenuContainer" class="space-y-3 pt-1"></div>
             </div>
@@ -297,18 +307,13 @@
 
     <script>
         let pantry = JSON.parse(localStorage.getItem('zerosprechi_pantry')) || [
-            { id: 1, name: "Mozzarella", qty: "100g", pezzi: 2, expiry: "2026-11-14" },
-            { id: 2, name: "Petto di Pollo", qty: "500g", pezzi: 1, expiry: "2026-11-05" },
-            { id: 3, name: "Zucchine", qty: "300g", pezzi: 4, expiry: "2026-11-02" }
+            { id: 1, name: "Mozzarella", qty: "100g", pezzi: 2, expiry: "2026-11-14", freezer: false, category: "Frigorifero" },
+            { id: 2, name: "Petto di Pollo", qty: "500g", pezzi: 1, expiry: "2026-11-05", freezer: true, category: "Freezer" },
+            { id: 3, name: "Zucchine", qty: "300g", pezzi: 4, expiry: "2026-11-02", freezer: false, category: "Verdura" }
         ];
 
-        let openedProducts = JSON.parse(localStorage.getItem('zerosprechi_opened')) || [
-            { id: 101, name: "Latte Intero", openDate: getTodayDate(), consumeBy: getFutureDate(3) }
-        ];
-
-        let shoppingList = JSON.parse(localStorage.getItem('zerosprechi_shopping')) || [
-            { id: 1, name: "Olio Extravergine d'Oliva", checked: false }
-        ];
+        let openedProducts = JSON.parse(localStorage.getItem('zerosprechi_opened')) || [];
+        let shoppingList = JSON.parse(localStorage.getItem('zerosprechi_shopping')) || [];
 
         let weeklyMenuData = JSON.parse(localStorage.getItem('zerosprechi_menu')) || [
             { day: "Lunedì", lunch: "Petto di Pollo e Zucchine", lunchDone: false, dinner: "Vellutata di verdure", dinnerDone: false },
@@ -326,8 +331,8 @@
             { name: "Pastina d'orzo per bambini", price: "€ 0,89", discount: "-15%", tag: "Ideale per Camilla" }
         ];
 
-        let wizardCurrentStep = 1;
-        let wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1 };
+        let wizardCurrentStep = 1; // 1: Nome, 2: Qta, 3: Scadenza (Calendario), 4: Pezzi & Freezer
+        let wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1, freezer: false };
         let recognition = null;
         let expenseChartInstance = null;
 
@@ -354,37 +359,62 @@
             if(tabId === 'grafici') renderChart('giornaliero');
         }
 
-        // RENDER DISPENSA CON TASTO MODIFICA
+        // AUTO-SMISTAMENTO CATEGORIE DISPENSA
+        function autoDetectCategory(name, isFreezer) {
+            if (isFreezer) return "Freezer";
+            const lower = name.toLowerCase();
+            if (lower.includes('latte') || lower.includes('mozzarella') || lower.includes('yogurt') || lower.includes('affettato') || lower.includes('burro') || lower.includes('formaggio') || lower.includes('panna')) return "Frigorifero";
+            if (lower.includes('biscotti') || lower.includes('merendine') || lower.includes('cereali') || lower.includes('brioche') || lower.includes('latte uht') || lower.includes('caffè')) return "Colazione / Merende";
+            if (lower.includes('insalata') || lower.includes('zucchine') || lower.includes('pomodoro') || lower.includes('carote') || lower.includes('patate') || lower.includes('verdura') || lower.includes('spinaci')) return "Verdura";
+            if (lower.includes('mela') || lower.includes('pera') || lower.includes('banana') || lower.includes('arancia') || lower.includes('frutta') || lower.includes('kiwi')) return "Frutta";
+            if (lower.includes('farina') || lower.includes('lievito') || lower.includes('zucchero') || lower.includes('vanillina') || lower.includes('cacao')) return "Prodotti per Pane o Dolci";
+            return "Pasta / Dispensa";
+        }
+
+        // RENDER DISPENSA DIVISA PER CATEGORIE
         function renderPantry() {
-            const container = document.getElementById('pantryList');
+            const container = document.getElementById('categoriesContainer');
             document.getElementById('pantryCount').innerText = pantry.length;
             container.innerHTML = '';
 
             if(pantry.length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6 font-bold">La dispensa è vuota.</p>';
+                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6 font-bold bg-white rounded-2xl">La dispensa è vuota.</p>';
                 return;
             }
 
-            pantry.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+            const categories = ["Frigorifero", "Freezer", "Colazione / Merende", "Verdura", "Frutta", "Pasta / Dispensa", "Prodotti per Pane o Dolci"];
+            
+            categories.forEach(cat => {
+                const itemsInCat = pantry.filter(item => (item.category || autoDetectCategory(item.name, item.freezer)) === cat);
+                if(itemsInCat.length === 0) return;
 
-            pantry.forEach((item, index) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-sm">
-                        <div class="space-y-0.5">
-                            <div class="font-black text-gray-800 text-base">${item.name}</div>
-                            <div class="text-gray-600 text-xs">Singolo: <b>${item.qty}</b> | Disponibili: <span class="bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-md">${item.pezzi} pz</span></div>
-                            <div class="text-[11px] text-orange-600 font-bold">Scadenza: ${formatItalianDate(item.expiry)}</div>
-                        </div>
-                        <div class="flex gap-1">
-                            <button onclick="openEditPantryModal(${index})" class="text-blue-600 hover:text-blue-800 p-2 text-lg">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deletePantryItem(${index})" class="text-red-500 hover:text-red-700 p-2 text-lg">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
+                let catHtml = `
+                    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-2">
+                        <h4 class="font-black text-emerald-800 text-sm uppercase flex items-center gap-2 border-b pb-2">
+                            <i class="fa-solid fa-folder-open text-emerald-600"></i> ${cat} (${itemsInCat.length})
+                        </h4>
+                        <div class="space-y-2 pt-1">
                 `;
+
+                itemsInCat.forEach((item) => {
+                    const originalIndex = pantry.findIndex(p => p.id === item.id);
+                    catHtml += `
+                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100 text-xs">
+                            <div class="space-y-0.5">
+                                <div class="font-black text-gray-800 text-sm">${item.name} ${item.freezer ? '❄️' : ''}</div>
+                                <div class="text-gray-600">Singolo: <b>${item.qty}</b> | Pezzi: <span class="bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-md">${item.pezzi} pz</span></div>
+                                <div class="text-[11px] text-orange-600 font-bold">Scadenza: ${formatItalianDate(item.expiry)}</div>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="openEditPantryModal(${originalIndex})" class="text-blue-600 hover:text-blue-800 p-2 text-base"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deletePantryItem(${originalIndex})" class="text-red-500 hover:text-red-700 p-2 text-base"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                catHtml += `</div></div>`;
+                container.innerHTML += catHtml;
             });
 
             saveState();
@@ -393,205 +423,10 @@
             renderWeeklyMenu();
         }
 
-        // MODIFICA SINGOLA VOCE IN DISPENSA
-        function openEditPantryModal(index) {
-            const item = pantry[index];
-            document.getElementById('editPantryIndex').value = index;
-            document.getElementById('editPantryName').value = item.name;
-            document.getElementById('editPantryQty').value = item.qty;
-            document.getElementById('editPantryPezzi').value = item.pezzi || 1;
-            document.getElementById('editPantryExpiry').value = item.expiry;
-            document.getElementById('editPantryModal').classList.remove('hidden');
-        }
-
-        function closeEditPantryModal() {
-            document.getElementById('editPantryModal').classList.add('hidden');
-        }
-
-        function saveEditPantry() {
-            const index = document.getElementById('editPantryIndex').value;
-            pantry[index].name = document.getElementById('editPantryName').value.trim();
-            pantry[index].qty = document.getElementById('editPantryQty').value.trim();
-            pantry[index].pezzi = parseInt(document.getElementById('editPantryPezzi').value) || 1;
-            pantry[index].expiry = document.getElementById('editPantryExpiry').value;
-
-            closeEditPantryModal();
-            renderPantry();
-            showNotification("Voce modificata correttamente!");
-        }
-
-        // RENDER MENU CON SPUNTA CONFERMA E MODIFICA AL VOLO
-        function renderWeeklyMenu() {
-            const container = document.getElementById('weeklyMenuContainer');
-            container.innerHTML = '';
-
-            let openedNote = "";
-            if(openedProducts.length > 0) {
-                openedNote = `<div class="bg-amber-100 text-amber-900 p-3 rounded-2xl text-xs font-black mb-2">⚡ Priorità consumare aperti: ${openedProducts.map(p=>p.name).join(', ')}</div>`;
-            }
-
-            container.innerHTML = openedNote;
-
-            weeklyMenuData.forEach((item, index) => {
-                container.innerHTML += `
-                    <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-xs space-y-2">
-                        <div class="font-black text-emerald-800 text-sm border-b pb-1 flex justify-between items-center">
-                            <span>${item.day}</span>
-                        </div>
-
-                        <!-- PRANZO -->
-                        <div class="flex items-center justify-between gap-2 pt-1">
-                            <label class="flex items-center gap-2 cursor-pointer flex-1">
-                                <input type="checkbox" ${item.lunchDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'lunch')" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
-                                <span class="${item.lunchDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
-                                    Pranzo: <b>${item.lunch}</b>
-                                </span>
-                            </label>
-                            <button onclick="openCustomMealModal(${index}, 'lunch')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">
-                                ✏️ Cambia
-                            </button>
-                        </div>
-
-                        <!-- CENA -->
-                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-100">
-                            <label class="flex items-center gap-2 cursor-pointer flex-1">
-                                <input type="checkbox" ${item.dinnerDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'dinner')" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
-                                <span class="${item.dinnerDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
-                                    Cena: <b>${item.dinner}</b>
-                                </span>
-                            </label>
-                            <button onclick="openCustomMealModal(${index}, 'dinner')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">
-                                ✏️ Cambia
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // CONFERMA SPUNTA PASTO -> SCALA DALLA DISPENSA
-        function toggleMealDone(dayIndex, mealType) {
-            const isDone = mealType === 'lunch' ? !weeklyMenuData[dayIndex].lunchDone : !weeklyMenuData[dayIndex].dinnerDone;
-            if (mealType === 'lunch') weeklyMenuData[dayIndex].lunchDone = isDone;
-            else weeklyMenuData[dayIndex].dinnerDone = isDone;
-
-            if (isDone) {
-                const mealText = mealType === 'lunch' ? weeklyMenuData[dayIndex].lunch : weeklyMenuData[dayIndex].dinner;
-                deductIngredientsFromPantry(mealText);
-                showNotification(`Pasto confermato! Ingredienti scalati dalla dispensa.`);
-            }
-
-            renderWeeklyMenu();
-        }
-
-        // SCALA INGREDIENTI DALLA DISPENSA
-        function deductIngredientsFromPantry(mealText) {
-            const lowerMeal = mealText.toLowerCase();
-
-            pantry.forEach((item, idx) => {
-                if (lowerMeal.includes(item.name.toLowerCase())) {
-                    if (item.pezzi > 1) {
-                        item.pezzi -= 1; // Scala 1 pezzo
-                    } else {
-                        pantry.splice(idx, 1); // Rimuove se finiti i pezzi
-                    }
-                }
-            });
-
-            renderPantry();
-        }
-
-        // MODIFICA PASTO CUCINATO AL VOLO
-        function openCustomMealModal(dayIndex, mealType) {
-            document.getElementById('customMealDayIndex').value = dayIndex;
-            document.getElementById('customMealType').value = mealType;
-            document.getElementById('customMealDesc').value = '';
-            document.getElementById('customMealModal').classList.remove('hidden');
-        }
-
-        function closeCustomMealModal() {
-            document.getElementById('customMealModal').classList.add('hidden');
-        }
-
-        function confirmCustomMeal() {
-            const dayIdx = document.getElementById('customMealDayIndex').value;
-            const mealType = document.getElementById('customMealType').value;
-            const desc = document.getElementById('customMealDesc').value.trim();
-
-            if (!desc) return;
-
-            if (mealType === 'lunch') {
-                weeklyMenuData[dayIdx].lunch = desc;
-                weeklyMenuData[dayIdx].lunchDone = true;
-            } else {
-                weeklyMenuData[dayIdx].dinner = desc;
-                weeklyMenuData[dayIdx].dinnerDone = true;
-            }
-
-            deductIngredientsFromPantry(desc);
-            closeCustomMealModal();
-            renderWeeklyMenu();
-            showNotification("Pasto aggiornato e ingredienti scalati dalla dispensa!");
-        }
-
-        // PRODOTTI APERTI
-        function renderOpenedProducts() {
-            const container = document.getElementById('openedProductsList');
-            container.innerHTML = '';
-
-            if(openedProducts.length === 0) {
-                container.innerHTML = '<p class="text-xs text-amber-700 font-semibold italic">Nessun prodotto aperto segnalato.</p>';
-                return;
-            }
-
-            openedProducts.forEach((item, index) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-3 rounded-2xl border border-amber-200 text-xs shadow-sm">
-                        <div>
-                            <span class="font-black text-amber-900 text-sm">${item.name}</span>
-                            <div class="text-gray-500 text-[11px]">Aperto il: ${formatItalianDate(item.openDate)}</div>
-                            <div class="text-red-600 font-black text-xs mt-0.5">⚠️ Da consumare entro: ${formatItalianDate(item.consumeBy)}</div>
-                        </div>
-                        <button onclick="deleteOpenedProduct(${index})" class="text-amber-700 hover:text-red-600 p-2 font-black text-lg">
-                            <i class="fa-solid fa-check"></i>
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        function openOpenProductModal() { document.getElementById('openProductModal').classList.remove('hidden'); document.getElementById('openProdDate').value = getTodayDate(); }
-        function closeOpenProductModal() { document.getElementById('openProductModal').classList.add('hidden'); }
-
-        function saveOpenProduct() {
-            const name = document.getElementById('openProdName').value.trim();
-            const openDate = document.getElementById('openProdDate').value;
-            if(!name || !openDate) return;
-
-            let daysToConsume = 3;
-            const lower = name.toLowerCase();
-            if(lower.includes('latte')) daysToConsume = 4;
-            if(lower.includes('passata') || lower.includes('pomodoro')) daysToConsume = 3;
-            if(lower.includes('pesto')) daysToConsume = 5;
-            if(lower.includes('yogurt')) daysToConsume = 6;
-
-            const consumeBy = addDaysToDate(openDate, daysToConsume);
-            openedProducts.push({ id: Date.now(), name, openDate, consumeBy });
-
-            closeOpenProductModal();
-            renderPantry();
-            showNotification(`Prodotto aperto registrato! Consumalo entro ${daysToConsume} giorni.`);
-        }
-
-        function deleteOpenedProduct(index) {
-            openedProducts.splice(index, 1);
-            renderPantry();
-        }
-
-        // --- WIZARD VOCALE SEQUENZIALE ---
+        // --- WIZARD VOCALE CON CALENDARIO E NUMERI ---
         function startVoiceWizard() {
             wizardCurrentStep = 1;
-            wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1 };
+            wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1, freezer: false };
             updateWizardStepUI();
             document.getElementById('voiceWizardModal').classList.remove('hidden');
             setTimeout(() => listenCurrentStep(), 400);
@@ -601,28 +436,54 @@
             const badge = document.getElementById('stepBadge');
             const title = document.getElementById('stepTitle');
             const subtitle = document.getElementById('stepSubtitle');
-            const stepVal = document.getElementById('stepValue');
+            
+            const voiceBox = document.getElementById('wizardVoiceContainer');
+            const calBox = document.getElementById('wizardCalendarContainer');
+            const numBox = document.getElementById('wizardNumbersContainer');
+            const skipBtn = document.getElementById('skipStepBtn');
+
+            voiceBox.classList.add('hidden');
+            calBox.classList.add('hidden');
+            numBox.classList.add('hidden');
+            skipBtn.classList.remove('hidden');
 
             if (wizardCurrentStep === 1) {
                 badge.innerText = "PASSO 1 DI 4";
                 title.innerText = "Detti il NOME del prodotto";
-                subtitle.innerText = "Dì 'SALTA' per saltare";
-                stepVal.innerText = wizardTempProduct.name || "In attesa della voce...";
+                subtitle.innerText = "Dì 'SALTA' se vuoi passare oltre";
+                voiceBox.classList.remove('hidden');
+                document.getElementById('stepValue').innerText = wizardTempProduct.name || "In attesa della voce...";
             } else if (wizardCurrentStep === 2) {
                 badge.innerText = "PASSO 2 DI 4";
                 title.innerText = "Detti la QUANTITÀ singola";
                 subtitle.innerText = "Es. '100 grammi', '1 litro' (o 'SALTA')";
-                stepVal.innerText = wizardTempProduct.qty || "In attesa della voce...";
+                voiceBox.classList.remove('hidden');
+                document.getElementById('stepValue').innerText = wizardTempProduct.qty || "In attesa della voce...";
             } else if (wizardCurrentStep === 3) {
                 badge.innerText = "PASSO 3 DI 4";
-                title.innerText = "Detti la DATA SCADENZA";
-                subtitle.innerText = "Es. '14 novembre' (o 'SALTA')";
-                stepVal.innerText = wizardTempProduct.expiry ? formatItalianDate(wizardTempProduct.expiry) : "In attesa della voce...";
+                title.innerText = "Seleziona Data Scadenza";
+                subtitle.innerText = "Usa il calendario o premi Salta";
+                calBox.classList.remove('hidden');
+                document.getElementById('wizardCalendarInput').value = getFutureDate(7);
             } else if (wizardCurrentStep === 4) {
                 badge.innerText = "PASSO 4 DI 4";
-                title.innerText = "Detti il NUMERO DI PEZZI";
-                subtitle.innerText = "Es. '2 pezzi', '1 confezione' (o 'SALTA')";
-                stepVal.innerText = wizardTempProduct.pezzi ? `${wizardTempProduct.pezzi} pz` : "In attesa della voce...";
+                title.innerText = "Seleziona N° Pezzi & Freezer";
+                subtitle.innerText = "Clicca sul numero corrispondente";
+                numBox.classList.remove('hidden');
+                skipBtn.classList.add('hidden'); // Nessun salto necessario, basta cliccare un numero
+                renderNumberGrid();
+            }
+        }
+
+        function renderNumberGrid() {
+            const grid = document.getElementById('numberGrid');
+            grid.innerHTML = '';
+            for(let i=1; i<=10; i++) {
+                grid.innerHTML += `
+                    <button onclick="selectNumberAndFinish(${i})" class="bg-emerald-50 hover:bg-emerald-600 hover:text-white border-2 border-emerald-500 text-emerald-800 py-2.5 rounded-xl font-black text-base shadow-sm transition active:scale-95">
+                        ${i}
+                    </button>
+                `;
             }
         }
 
@@ -669,40 +530,42 @@
             } else if (wizardCurrentStep === 2) {
                 wizardTempProduct.qty = isSkip ? "Quantità std" : text;
                 nextWizardStep();
-            } else if (wizardCurrentStep === 3) {
-                wizardTempProduct.expiry = isSkip ? getFutureDate(7) : parseExactItalianDate(text);
-                nextWizardStep();
-            } else if (wizardCurrentStep === 4) {
-                const numMatch = lower.match(/(\d+)/);
-                wizardTempProduct.pezzi = isSkip ? 1 : (numMatch ? parseInt(numMatch[1]) : 1);
-                finishVoiceWizard();
             }
         }
 
         function nextWizardStep() {
             wizardCurrentStep++;
             updateWizardStepUI();
-            setTimeout(() => listenCurrentStep(), 500);
+            if (wizardCurrentStep === 1 || wizardCurrentStep === 2) {
+                setTimeout(() => listenCurrentStep(), 400);
+            }
         }
 
-        function skipWizardStep() { processWizardStepInput("salta"); }
-
-        function parseExactItalianDate(text) {
-            const lower = text.toLowerCase();
-            const months = { 'gennaio':'01', 'febbraio':'02', 'marzo':'03', 'aprile':'04', 'maggio':'05', 'giugno':'06', 'luglio':'07', 'agosto':'08', 'settembre':'09', 'ottobre':'10', 'novembre':'11', 'dicembre':'12' };
-
-            const dayMatch = lower.match(/(\d{1,2})/);
-            let day = dayMatch ? dayMatch[1].padStart(2, '0') : '14';
-
-            let month = '11';
-            for (let mName in months) {
-                if (lower.includes(mName)) { month = months[mName]; break; }
+        function skipWizardStep() {
+            if (wizardCurrentStep === 1) {
+                wizardTempProduct.name = "Prodotto Generico";
+                nextWizardStep();
+            } else if (wizardCurrentStep === 2) {
+                wizardTempProduct.qty = "Std";
+                nextWizardStep();
+            } else if (wizardCurrentStep === 3) {
+                wizardTempProduct.expiry = getFutureDate(7); // Default se saltata
+                wizardCurrentStep++;
+                updateWizardStepUI();
             }
+        }
 
-            const yearMatch = lower.match(/\b(202\d)\b/);
-            const year = yearMatch ? yearMatch[1] : '2026';
+        function confirmCalendarDate() {
+            const val = document.getElementById('wizardCalendarInput').value;
+            wizardTempProduct.expiry = val || getFutureDate(7);
+            wizardCurrentStep++;
+            updateWizardStepUI();
+        }
 
-            return `${year}-${month}-${day}`;
+        function selectNumberAndFinish(num) {
+            wizardTempProduct.pezzi = num;
+            wizardTempProduct.freezer = document.getElementById('wizardFreezerCheck').checked;
+            finishVoiceWizard();
         }
 
         function cancelVoiceWizard() { document.getElementById('voiceWizardModal').classList.add('hidden'); }
@@ -711,19 +574,181 @@
             if(!wizardTempProduct.name) wizardTempProduct.name = "Prodotto";
             if(!wizardTempProduct.qty) wizardTempProduct.qty = "Std";
             if(!wizardTempProduct.expiry) wizardTempProduct.expiry = getFutureDate(7);
-            if(!wizardTempProduct.pezzi) wizardTempProduct.pezzi = 1;
+
+            const category = autoDetectCategory(wizardTempProduct.name, wizardTempProduct.freezer);
 
             pantry.push({
                 id: Date.now(),
                 name: wizardTempProduct.name,
                 qty: wizardTempProduct.qty,
                 pezzi: parseInt(wizardTempProduct.pezzi) || 1,
-                expiry: wizardTempProduct.expiry
+                expiry: wizardTempProduct.expiry,
+                freezer: wizardTempProduct.freezer,
+                category: category
             });
 
             cancelVoiceWizard();
             renderPantry();
-            showNotification(`✅ Prodotto "${wizardTempProduct.name}" inserito correttamente in dispensa!`);
+            showNotification(`✅ Prodotto "${wizardTempProduct.name}" aggiunto in ${category}!`);
+        }
+
+        // MENU E AVVISO SCONGELAMENTO GIORNO PRIMA
+        function renderWeeklyMenu() {
+            const container = document.getElementById('weeklyMenuContainer');
+            container.innerHTML = '';
+
+            // Controlla se nel menu ci sono ingredienti in freezer da scongelare il giorno prima
+            let defrostAlerts = "";
+            weeklyMenuData.forEach((item, idx) => {
+                const lowerLunch = item.lunch.toLowerCase();
+                const freezerItem = pantry.find(p => p.freezer && lowerLunch.includes(p.name.toLowerCase()));
+                if(freezerItem && idx > 0) {
+                    // Avvisa nel giorno precedente
+                    const prevDay = weeklyMenuData[idx - 1].day;
+                    defrostAlerts += `<div class="bg-blue-100 text-blue-900 p-3 rounded-2xl text-xs font-black mb-2">❄️ Ricordati di scongelare **${freezerItem.name}** oggi per la ricetta di domani (${item.day})!</div>`;
+                }
+            });
+
+            container.innerHTML = defrostAlerts;
+
+            weeklyMenuData.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-xs space-y-2">
+                        <div class="font-black text-emerald-800 text-sm border-b pb-1">
+                            <span>${item.day}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                <input type="checkbox" ${item.lunchDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'lunch')" class="w-5 h-5 text-emerald-600 rounded">
+                                <span class="${item.lunchDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
+                                    Pranzo: <b>${item.lunch}</b>
+                                </span>
+                            </label>
+                            <button onclick="openCustomMealModal(${index}, 'lunch')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">✏️ Cambia</button>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-100">
+                            <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                <input type="checkbox" ${item.dinnerDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'dinner')" class="w-5 h-5 text-emerald-600 rounded">
+                                <span class="${item.dinnerDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
+                                    Cena: <b>${item.dinner}</b>
+                                </span>
+                            </label>
+                            <button onclick="openCustomMealModal(${index}, 'dinner')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">✏️ Cambia</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleMealDone(dayIndex, mealType) {
+            const isDone = mealType === 'lunch' ? !weeklyMenuData[dayIndex].lunchDone : !weeklyMenuData[dayIndex].dinnerDone;
+            if (mealType === 'lunch') weeklyMenuData[dayIndex].lunchDone = isDone;
+            else weeklyMenuData[dayIndex].dinnerDone = isDone;
+
+            if (isDone) {
+                const mealText = mealType === 'lunch' ? weeklyMenuData[dayIndex].lunch : weeklyMenuData[dayIndex].dinner;
+                deductIngredientsFromPantry(mealText);
+                showNotification(`Pasto confermato! Ingredienti scalati dalla dispensa.`);
+            }
+            renderWeeklyMenu();
+        }
+
+        function deductIngredientsFromPantry(mealText) {
+            const lowerMeal = mealText.toLowerCase();
+            pantry.forEach((item, idx) => {
+                if (lowerMeal.includes(item.name.toLowerCase())) {
+                    if (item.pezzi > 1) item.pezzi -= 1;
+                    else pantry.splice(idx, 1);
+                }
+            });
+            renderPantry();
+        }
+
+        // MODIFICA PRODOTTO IN DISPENSA
+        function openEditPantryModal(index) {
+            const item = pantry[index];
+            document.getElementById('editPantryIndex').value = index;
+            document.getElementById('editPantryName').value = item.name;
+            document.getElementById('editPantryQty').value = item.qty;
+            document.getElementById('editPantryPezzi').value = item.pezzi || 1;
+            document.getElementById('editPantryExpiry').value = item.expiry;
+            document.getElementById('editPantryFreezer').checked = item.freezer || false;
+            document.getElementById('editPantryModal').classList.remove('hidden');
+        }
+
+        function closeEditPantryModal() { document.getElementById('editPantryModal').classList.add('hidden'); }
+
+        function saveEditPantry() {
+            const index = document.getElementById('editPantryIndex').value;
+            const name = document.getElementById('editPantryName').value.trim();
+            const freezer = document.getElementById('editPantryFreezer').checked;
+
+            pantry[index].name = name;
+            pantry[index].qty = document.getElementById('editPantryQty').value.trim();
+            pantry[index].pezzi = parseInt(document.getElementById('editPantryPezzi').value) || 1;
+            pantry[index].expiry = document.getElementById('editPantryExpiry').value;
+            pantry[index].freezer = freezer;
+            pantry[index].category = autoDetectCategory(name, freezer);
+
+            closeEditPantryModal();
+            renderPantry();
+            showNotification("Modifiche salvate!");
+        }
+
+        // CAMBIO PASTO
+        function openCustomMealModal(dayIndex, mealType) {
+            document.getElementById('customMealDayIndex').value = dayIndex;
+            document.getElementById('customMealType').value = mealType;
+            document.getElementById('customMealDesc').value = '';
+            document.getElementById('customMealModal').classList.remove('hidden');
+        }
+        function closeCustomMealModal() { document.getElementById('customMealModal').classList.add('hidden'); }
+        function confirmCustomMeal() {
+            const dayIdx = document.getElementById('customMealDayIndex').value;
+            const mealType = document.getElementById('customMealType').value;
+            const desc = document.getElementById('customMealDesc').value.trim();
+            if (!desc) return;
+            if (mealType === 'lunch') { weeklyMenuData[dayIdx].lunch = desc; weeklyMenuData[dayIdx].lunchDone = true; }
+            else { weeklyMenuData[dayIdx].dinner = desc; weeklyMenuData[dayIdx].dinnerDone = true; }
+            deductIngredientsFromPantry(desc);
+            closeCustomMealModal();
+            renderWeeklyMenu();
+            showNotification("Menu aggiornato!");
+        }
+
+        function renderOpenedProducts() {
+            const container = document.getElementById('openedProductsList');
+            container.innerHTML = '';
+            if(openedProducts.length === 0) {
+                container.innerHTML = '<p class="text-xs text-amber-700 font-semibold italic">Nessun prodotto aperto.</p>';
+                return;
+            }
+            openedProducts.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-3 rounded-2xl border border-amber-200 text-xs shadow-sm">
+                        <div>
+                            <span class="font-black text-amber-900 text-sm">${item.name}</span>
+                            <div class="text-gray-500 text-[11px]">Aperto il: ${formatItalianDate(item.openDate)} | Entro: ${formatItalianDate(item.consumeBy)}</div>
+                        </div>
+                        <button onclick="openedProducts.splice(${index},1); renderPantry();" class="text-amber-700 p-2 font-black text-base"><i class="fa-solid fa-check"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function openOpenProductModal() { document.getElementById('openProductModal').classList.remove('hidden'); document.getElementById('openProdDate').value = getTodayDate(); }
+        function closeOpenProductModal() { document.getElementById('openProductModal').classList.add('hidden'); }
+        function saveOpenProduct() {
+            const name = document.getElementById('openProdName').value.trim();
+            const openDate = document.getElementById('openProdDate').value;
+            if(!name || !openDate) return;
+            const consumeBy = addDaysToDate(openDate, 3);
+            openedProducts.push({ id: Date.now(), name, openDate, consumeBy });
+            closeOpenProductModal();
+            renderPantry();
+            showNotification("Prodotto aperto registrato!");
         }
 
         function showNotification(msg) {
@@ -733,20 +758,8 @@
             setTimeout(() => el.classList.add('hidden'), 3500);
         }
 
-        function addPantryItemManual(e) {
-            e.preventDefault();
-            const name = document.getElementById('itemName').value;
-            const qty = document.getElementById('itemQty').value;
-            const pezzi = parseInt(document.getElementById('itemPezzi').value) || 1;
-            const expiry = document.getElementById('itemExpiry').value;
-            pantry.push({ id: Date.now(), name, qty, pezzi, expiry });
-            document.getElementById('addItemForm').reset();
-            renderPantry();
-            showNotification("Prodotto inserito correttamente!");
-        }
-
         function deletePantryItem(index) { pantry.splice(index, 1); renderPantry(); }
-        function clearPantry() { if(confirm("Vuoi svuotare la dispensa?")) { pantry = []; renderPantry(); } }
+        function clearPantry() { if(confirm("Svuotare la dispensa?")) { pantry = []; renderPantry(); } }
 
         function getTodayDate() { return new Date().toISOString().split('T')[0]; }
         function getFutureDate(days) { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().split('T')[0]; }
@@ -759,26 +772,21 @@
         }
 
         function renderRecipes() {
-            const container = document.getElementById('recipesContainer');
-            container.innerHTML = `
+            document.getElementById('recipesContainer').innerHTML = `
                 <div class="border border-emerald-200 bg-emerald-50/50 p-4 rounded-2xl space-y-2">
                     <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2">
                         <i class="fa-solid fa-utensils text-emerald-600"></i> Bocconcini di Pollo e Zucchine
                     </h3>
                     <div class="text-xs space-y-1.5 bg-white p-3 rounded-xl border border-emerald-100">
-                        <p><b>🧑 Martino (Sleeve):</b> 120g pollo + 80g zucchine (Morbido, alta densità proteica).</p>
-                        <p><b>👩 Valentina (Dieta):</b> 180g pollo + 200g zucchine (Ipocalorico e saziante).</p>
-                        <p><b>👶 Camilla (2.5 anni):</b> 40g pollo sminuzzato fine + zucchine cotte morbide.</p>
+                        <p><b>🧑 Martino (Sleeve):</b> 120g pollo + 80g zucchine.</p>
+                        <p><b>👩 Valentina (Dieta):</b> 180g pollo + 200g zucchine.</p>
+                        <p><b>👶 Camilla (2.5 anni):</b> 40g pollo sminuzzato + zucchine morbide.</p>
                     </div>
                 </div>
             `;
         }
 
-        function generateWeeklyMenu() {
-            renderWeeklyMenu();
-            showNotification("Menu settimanale rigenerato!");
-        }
-
+        function generateWeeklyMenu() { renderWeeklyMenu(); showNotification("Menu aggiornato!"); }
         function renderShopping() {
             const container = document.getElementById('shoppingListContainer');
             container.innerHTML = '';
@@ -786,16 +794,15 @@
                 container.innerHTML += `
                     <div class="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-sm">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" ${item.checked ? 'checked' : ''} onclick="toggleShopping(${index})" class="rounded text-emerald-600">
+                            <input type="checkbox" ${item.checked ? 'checked' : ''} onclick="shoppingList[${index}].checked = !shoppingList[${index}].checked; saveState();" class="rounded text-emerald-600">
                             <span class="${item.checked ? 'line-through text-gray-400' : 'text-gray-800 font-bold'}">${item.name}</span>
                         </label>
-                        <button onclick="deleteShopping(${index})" class="text-red-400 p-1 text-lg"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="shoppingList.splice(${index},1); renderShopping();" class="text-red-400 p-1 text-lg"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 `;
             });
             saveState();
         }
-
         function addShoppingItem() {
             const input = document.getElementById('shoppingInput');
             if(!input.value.trim()) return;
@@ -803,9 +810,6 @@
             input.value = '';
             renderShopping();
         }
-
-        function toggleShopping(index) { shoppingList[index].checked = !shoppingList[index].checked; renderShopping(); }
-        function deleteShopping(index) { shoppingList.splice(index, 1); renderShopping(); }
 
         function renderOffers() {
             const container = document.getElementById('esselungaOffers');
@@ -819,9 +823,7 @@
                             <p class="text-xs font-semibold text-red-600">${off.price}</p>
                             <p class="text-xs text-gray-500 mt-0.5">${off.tag}</p>
                         </div>
-                        <button onclick="shoppingList.push({id: Date.now(), name: '${off.name}', checked: false}); renderShopping(); showNotification('Aggiunto alla spesa!')" class="bg-red-600 text-white text-xs px-3.5 py-2.5 rounded-xl font-black">
-                            + Spesa
-                        </button>
+                        <button onclick="shoppingList.push({id: Date.now(), name: '${off.name}', checked: false}); renderShopping(); showNotification('Aggiunto alla spesa!')" class="bg-red-600 text-white text-xs px-3.5 py-2.5 rounded-xl font-black">+ Spesa</button>
                     </div>
                 `;
             });
@@ -830,25 +832,18 @@
         function renderChart(period) {
             const ctx = document.getElementById('expenseChart').getContext('2d');
             if(expenseChartInstance) expenseChartInstance.destroy();
-
             let labels = ['Oggi'], data = [18];
             if(period === 'settimanale') { labels = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']; data = [40, 15, 60, 20, 35, 90, 30]; }
             else if(period === 'mensile') { labels = ['Sett 1', 'Sett 2', 'Sett 3', 'Sett 4']; data = [160, 130, 190, 140]; }
-
             expenseChartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Spesa (€)', data: data, backgroundColor: '#10b981', borderRadius: 6 }]
-                },
+                data: { labels: labels, datasets: [{ label: 'Spesa (€)', data: data, backgroundColor: '#10b981', borderRadius: 6 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
-
         function updateChartPeriod(period, btn) {
             document.querySelectorAll('.chart-btn').forEach(b => { b.classList.remove('bg-white', 'shadow-sm'); b.classList.add('text-gray-600'); });
-            btn.classList.add('bg-white', 'shadow-sm');
-            btn.classList.remove('text-gray-600');
+            btn.classList.add('bg-white', 'shadow-sm'); btn.classList.remove('text-gray-600');
             renderChart(period);
         }
 
