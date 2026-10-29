@@ -2,18 +2,21 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>BUON APP-ETITO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         html, body {
-            font-size: 18px; /* Caratteri grandi per schermo cellulare */
+            font-size: 16px;
             background-color: #f3f4f6;
             color: #1f2937;
-            padding-bottom: 95px;
+            padding-bottom: 90px;
             -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
         }
         .mobile-nav {
             position: fixed;
@@ -23,6 +26,7 @@
             background: white;
             border-top: 1px solid #e5e7eb;
             z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -38,146 +42,187 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- Header BUON APP-ETITO -->
-    <header class="bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-40">
-        <h1 class="text-3xl font-black text-center tracking-wide flex items-center justify-center gap-2">
+    <!-- Header App Nativa -->
+    <header class="bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-40 pt-safe">
+        <h1 class="text-2xl font-black text-center tracking-wide flex items-center justify-center gap-2">
             <i class="fa-solid fa-utensils"></i> BUON APP-ETITO
         </h1>
-        <p class="text-xs text-center text-emerald-100 font-semibold mt-1">Martino • Valentina • Camilla</p>
+        <p class="text-xs text-center text-emerald-100 font-semibold mt-0.5">Martino • Valentina • Camilla</p>
     </header>
 
-    <!-- WIZARD POP-UP VOCALE SEQUENZIALE INGRANDITO FOR MOBILE -->
+    <!-- NOTIFICA A SCOMPARSA -->
+    <div id="successNotification" class="fixed top-16 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-black text-sm hidden z-50 flex items-center gap-2 w-11/12 max-w-sm justify-center">
+        <i class="fa-solid fa-circle-check text-xl"></i>
+        <span id="successText">Operazione completata!</span>
+    </div>
+
+    <!-- WIZARD POP-UP VOCALE INSERIMENTO DISPENSA -->
     <div id="voiceWizardModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-3xl max-w-sm w-full space-y-5 text-center shadow-2xl border-4 border-emerald-500 relative">
-            
+        <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-4 text-center shadow-2xl border-4 border-emerald-500 relative">
             <div id="wizardStepHeader" class="space-y-1">
-                <span id="stepBadge" class="bg-emerald-100 text-emerald-800 text-sm font-black px-4 py-1.5 rounded-full uppercase">PASSO 1 DI 4</span>
-                <h3 id="stepTitle" class="text-2xl font-black text-gray-800 pt-2">Detti il NOME del prodotto</h3>
-                <p id="stepSubtitle" class="text-xs text-gray-500 font-semibold">Dì "SALTA" se vuoi passare al prossimo</p>
+                <span id="stepBadge" class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase">PASSO 1 DI 4</span>
+                <h3 id="stepTitle" class="text-xl font-black text-gray-800 pt-1">Detti il NOME del prodotto</h3>
+                <p id="stepSubtitle" class="text-[11px] text-gray-500 font-semibold">Dì "SALTA" per saltare un passaggio</p>
             </div>
 
-            <!-- Pulsante Microfono Grande per Pollice -->
-            <div class="py-2">
-                <button id="wizardMicBtn" onclick="listenCurrentStep()" class="w-28 h-28 bg-red-600 text-white rounded-full flex flex-col items-center justify-center mx-auto shadow-2xl hover:bg-red-700 active:scale-95 transition">
-                    <i id="wizardMicIcon" class="fa-solid fa-microphone text-4xl"></i>
-                    <span class="text-[10px] uppercase font-bold mt-1">Tocca & Parla</span>
+            <div class="py-1">
+                <button id="wizardMicBtn" onclick="listenCurrentStep()" class="w-24 h-24 bg-red-600 text-white rounded-full flex flex-col items-center justify-center mx-auto shadow-2xl active:scale-95 transition">
+                    <i id="wizardMicIcon" class="fa-solid fa-microphone text-3xl"></i>
+                    <span class="text-[9px] uppercase font-bold mt-1">Tocca & Parla</span>
                 </button>
             </div>
 
-            <!-- Valore Riconosciuto -->
-            <div class="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200 min-h-[60px] flex items-center justify-center">
-                <p id="stepValue" class="text-lg font-black text-emerald-700">In attesa della voce...</p>
+            <div class="bg-gray-50 p-3 rounded-2xl border-2 border-gray-200 min-h-[50px] flex items-center justify-center">
+                <p id="stepValue" class="text-sm font-black text-emerald-700">In attesa della voce...</p>
             </div>
 
-            <!-- Tasti Navigazione Manuale -->
             <div class="flex gap-2 pt-1">
-                <button onclick="cancelVoiceWizard()" class="flex-1 bg-gray-200 text-gray-700 py-3.5 rounded-2xl font-black text-xs">Chiudi</button>
-                <button onclick="skipWizardStep()" class="flex-1 bg-amber-500 text-white py-3.5 rounded-2xl font-black text-xs">⏭️ Salva & Salta</button>
+                <button onclick="cancelVoiceWizard()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-black text-xs">Chiudi</button>
+                <button onclick="skipWizardStep()" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-black text-xs">⏭️ Salva & Salta</button>
             </div>
         </div>
     </div>
 
-    <!-- NOTIFICA PRODOTTO INSERITO -->
-    <div id="successNotification" class="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black text-base hidden z-50 flex items-center gap-3 w-11/12 max-w-sm justify-center">
-        <i class="fa-solid fa-circle-check text-2xl"></i>
-        <span id="successText">Prodotto inserito correttamente!</span>
+    <!-- POP-UP MODIFICA SINGOLO PRODOTTO IN DISPENSA -->
+    <div id="editPantryModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
+            <h3 class="font-black text-lg text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Modifica Prodotto
+            </h3>
+            <input type="hidden" id="editPantryIndex">
+            <div>
+                <label class="text-xs font-bold text-gray-600">Nome Prodotto</label>
+                <input type="text" id="editPantryName" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-bold text-gray-600">Quantità Singola</label>
+                    <input type="text" id="editPantryQty" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-600">N° Pezzi</label>
+                    <input type="number" id="editPantryPezzi" min="1" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-600">Data Scadenza</label>
+                <input type="date" id="editPantryExpiry" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeEditPantryModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Annulla</button>
+                <button onclick="saveEditPantry()" class="px-5 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl">Salva Modifiche</button>
+            </div>
+        </div>
     </div>
 
-    <main class="p-4 max-w-lg mx-auto space-y-5">
+    <!-- POP-UP MODIFICA PASTO CUCINATO (Sostituzione e rimozione cibi usati) -->
+    <div id="customMealModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
+            <h3 class="font-black text-lg text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-utensils text-blue-600"></i> Cosa hai cucinato invece?
+            </h3>
+            <p class="text-xs text-gray-500">I cibi che indichi verranno automaticamente rimossi dalla dispensa.</p>
+            <input type="hidden" id="customMealDayIndex">
+            <input type="hidden" id="customMealType"> <!-- lunch o dinner -->
+            <div>
+                <label class="text-xs font-bold text-gray-600">Descrizione del Pasto Cucinato</label>
+                <input type="text" id="customMealDesc" placeholder="Es. Pasta con passata e mozzarella" class="w-full border p-3 rounded-xl text-sm bg-gray-50">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeCustomMealModal()" class="px-4 py-2 text-xs font-bold text-gray-600">Annulla</button>
+                <button onclick="confirmCustomMeal()" class="px-5 py-2 bg-blue-600 text-white text-xs font-black rounded-xl">Conferma & Aggiorna Dispensa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER PRINCIPALE APPLICATIVO -->
+    <main class="p-4 max-w-md mx-auto space-y-4">
 
         <!-- TAB 1: DISPENSA & FRIGO -->
         <section id="tab-dispensa" class="tab-content active space-y-4">
             
-            <!-- Inserimento Vocale Guidato Sequenziale -->
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-4">
-                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+                <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle text-emerald-600"></i> Aggiungi Prodotto
                 </h2>
 
-                <button onclick="startVoiceWizard()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-5 px-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl active:scale-95 transition">
-                    <i class="fa-solid fa-microphone text-3xl"></i>
-                    <span>🎙️ Inserimento Vocale</span>
+                <button onclick="startVoiceWizard()" class="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-4 px-4 rounded-2xl font-black text-base flex items-center justify-center gap-3 shadow-lg active:scale-95 transition">
+                    <i class="fa-solid fa-microphone text-2xl"></i>
+                    <span>🎙️ Inserimento Vocale Guidato</span>
                 </button>
 
-                <!-- Form Manuale -->
                 <details class="text-xs text-gray-500">
-                    <summary class="font-bold cursor-pointer py-1 text-emerald-600 text-sm">+ Oppure inserisci a mano</summary>
-                    <form id="addItemForm" onsubmit="addPantryItemManual(event)" class="space-y-3 pt-3">
-                        <input type="text" id="itemName" placeholder="Nome Prodotto (es. Mozzarella)" required class="w-full border p-3.5 rounded-xl text-base bg-gray-50">
+                    <summary class="font-bold cursor-pointer py-1 text-emerald-600 text-xs">+ Oppure inserisci a mano</summary>
+                    <form id="addItemForm" onsubmit="addPantryItemManual(event)" class="space-y-2.5 pt-2">
+                        <input type="text" id="itemName" placeholder="Nome Prodotto (es. Mozzarella)" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="itemQty" placeholder="Quantità (es. 200g)" required class="w-full border p-3.5 rounded-xl text-base bg-gray-50">
-                            <input type="number" id="itemPezzi" placeholder="Pezzi (es. 2)" required class="w-full border p-3.5 rounded-xl text-base bg-gray-50">
+                            <input type="text" id="itemQty" placeholder="Quantità (es. 100g)" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+                            <input type="number" id="itemPezzi" placeholder="N° Pezzi (es. 2)" min="1" value="1" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
                         </div>
-                        <input type="date" id="itemExpiry" required class="w-full border p-3.5 rounded-xl text-base bg-gray-50">
-                        <button type="submit" class="w-full bg-emerald-600 text-white p-4 rounded-xl font-black text-base shadow">Salva in Dispensa</button>
+                        <input type="date" id="itemExpiry" required class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+                        <button type="submit" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-black text-xs shadow">Salva in Dispensa</button>
                     </form>
                 </details>
             </div>
 
             <!-- PRODOTTI APERTI -->
-            <div class="bg-amber-50 p-5 rounded-3xl border-2 border-amber-200 space-y-3">
+            <div class="bg-amber-50 p-4 rounded-3xl border-2 border-amber-200 space-y-2">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-black text-amber-900 text-lg flex items-center gap-2">
+                    <h3 class="font-black text-amber-900 text-base flex items-center gap-2">
                         <i class="fa-solid fa-box-open text-amber-600"></i> Prodotti Aperti
                     </h3>
-                    <button onclick="openOpenProductModal()" class="bg-amber-600 text-white text-xs px-3.5 py-2 rounded-xl font-black">+ Segnala Aperto</button>
+                    <button onclick="openOpenProductModal()" class="bg-amber-600 text-white text-[11px] px-3 py-1.5 rounded-xl font-black">+ Segnala Aperto</button>
                 </div>
-                <p class="text-xs text-amber-800 font-semibold">Calcolo automatico durata per consumarlo in tempo:</p>
                 <div id="openedProductsList" class="space-y-2"></div>
             </div>
 
-            <!-- LISTA DISPENSA COMPLETA -->
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-black text-gray-800 text-lg uppercase flex items-center gap-2">
+            <!-- LISTA DISPENSA COMPLETA CON TASTO MODIFICA -->
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-black text-gray-800 text-base uppercase flex items-center gap-2">
                         <i class="fa-solid fa-boxes-packing text-emerald-600"></i> Dispensa (<span id="pantryCount">0</span>)
                     </h3>
                     <button onclick="clearPantry()" class="text-xs text-red-500 font-black hover:underline">Svuota tutto</button>
                 </div>
-                <div id="pantryList" class="space-y-3"></div>
+                <div id="pantryList" class="space-y-2.5"></div>
             </div>
         </section>
 
         <!-- TAB 2: RICETTE -->
         <section id="tab-ricette" class="tab-content space-y-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+                <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                     <i class="fa-solid fa-utensils text-emerald-600"></i> Ricette Consigliate
                 </h2>
-                <p class="text-xs text-gray-500 font-semibold">Porzioni per i profili della famiglia:</p>
                 <div id="recipesContainer" class="space-y-3"></div>
             </div>
         </section>
 
-        <!-- TAB 3: MENU SETTIMANALE -->
+        <!-- TAB 3: MENU SETTIMANALE CON SPUNTE DI CONFERMA PASTO -->
         <section id="tab-menu" class="tab-content space-y-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+                    <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-emerald-600"></i> Menu Settimanale
                     </h2>
-                    <button onclick="generateWeeklyMenu()" class="bg-emerald-600 text-white text-xs px-3.5 py-2 rounded-xl font-black">⚡ Rigenera</button>
+                    <button onclick="generateWeeklyMenu()" class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-xl font-black">⚡ Rigenera</button>
                 </div>
 
-                <!-- TASTO VOCALE CAMBIO PROGRAMMA PASTO -->
-                <button onclick="startMealSwapVoice()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-lg transition">
-                    <i class="fa-solid fa-microphone text-xl"></i>
-                    <span>🎙️ Cambia Programma Cucina</span>
-                </button>
+                <p class="text-xs text-gray-500 font-semibold">Metti la spunta quando consumi un pasto per scalare gli ingredienti dalla dispensa:</p>
 
-                <div id="weeklyMenuContainer" class="space-y-2.5 pt-2"></div>
+                <div id="weeklyMenuContainer" class="space-y-3 pt-1"></div>
             </div>
         </section>
 
         <!-- TAB 4: SPESA -->
         <section id="tab-spesa" class="tab-content space-y-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+                <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                     <i class="fa-solid fa-cart-shopping text-emerald-600"></i> Lista Spesa
                 </h2>
                 <div class="flex gap-2">
-                    <input type="text" id="shoppingInput" placeholder="Aggiungi alla spesa..." class="border p-3.5 rounded-2xl text-base flex-1 bg-gray-50">
-                    <button onclick="addShoppingItem()" class="bg-emerald-600 text-white px-5 py-3.5 rounded-2xl text-xl font-black">+</button>
+                    <input type="text" id="shoppingInput" placeholder="Aggiungi alla spesa..." class="border p-3 rounded-2xl text-sm flex-1 bg-gray-50">
+                    <button onclick="addShoppingItem()" class="bg-emerald-600 text-white px-4 py-3 rounded-2xl text-lg font-black">+</button>
                 </div>
                 <div id="shoppingListContainer" class="space-y-2 pt-2"></div>
             </div>
@@ -185,8 +230,8 @@
 
         <!-- TAB 5: OFFERTE ESSELUNGA -->
         <section id="tab-offerte" class="tab-content space-y-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+                <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                     <i class="fa-solid fa-tags text-red-600"></i> Offerte Esselunga
                 </h2>
                 <div id="esselungaOffers" class="grid grid-cols-1 gap-3"></div>
@@ -195,16 +240,16 @@
 
         <!-- TAB 6: GRAFICI -->
         <section id="tab-grafici" class="tab-content space-y-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 space-y-3">
-                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-200 space-y-3">
+                <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie text-emerald-600"></i> Analisi Spesa
                 </h2>
                 <div class="flex gap-1 bg-gray-100 p-1.5 rounded-2xl">
-                    <button onclick="updateChartPeriod('giornaliero', this)" class="flex-1 py-2 text-xs font-black rounded-xl bg-white shadow-sm chart-btn">Oggi</button>
-                    <button onclick="updateChartPeriod('settimanale', this)" class="flex-1 py-2 text-xs font-black rounded-xl text-gray-600 chart-btn">Settimana</button>
-                    <button onclick="updateChartPeriod('mensile', this)" class="flex-1 py-2 text-xs font-black rounded-xl text-gray-600 chart-btn">Mese</button>
+                    <button onclick="updateChartPeriod('giornaliero', this)" class="flex-1 py-1.5 text-xs font-black rounded-xl bg-white shadow-sm chart-btn">Oggi</button>
+                    <button onclick="updateChartPeriod('settimanale', this)" class="flex-1 py-1.5 text-xs font-black rounded-xl text-gray-600 chart-btn">Settimana</button>
+                    <button onclick="updateChartPeriod('mensile', this)" class="flex-1 py-1.5 text-xs font-black rounded-xl text-gray-600 chart-btn">Mese</button>
                 </div>
-                <div class="relative h-64 w-full pt-2">
+                <div class="relative h-60 w-full pt-1">
                     <canvas id="expenseChart"></canvas>
                 </div>
             </div>
@@ -212,48 +257,49 @@
 
     </main>
 
-    <!-- Modale Segnala Prodotto Aperto -->
+    <!-- MODALE PRODOTTO APERTO -->
     <div id="openProductModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl">
-            <h3 class="font-black text-lg text-gray-800">Segnala Prodotto Aperto</h3>
-            <input type="text" id="openProdName" placeholder="Nome prodotto (es. Latte, Passata)" class="w-full border p-3 rounded-xl text-base bg-gray-50">
+        <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
+            <h3 class="font-black text-base text-gray-800">Segnala Prodotto Aperto</h3>
+            <input type="text" id="openProdName" placeholder="Nome prodotto (es. Latte, Passata)" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
             <div class="space-y-1">
                 <label class="text-xs font-bold text-gray-600">Data di Apertura</label>
-                <input type="date" id="openProdDate" class="w-full border p-3 rounded-xl text-base bg-gray-50">
+                <input type="date" id="openProdDate" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeOpenProductModal()" class="px-4 py-2.5 text-xs font-black text-gray-600">Annulla</button>
-                <button onclick="saveOpenProduct()" class="px-5 py-2.5 bg-amber-600 text-white text-xs font-black rounded-xl">Salva Aperto</button>
+                <button onclick="closeOpenProductModal()" class="px-3 py-2 text-xs font-black text-gray-600">Annulla</button>
+                <button onclick="saveOpenProduct()" class="px-4 py-2 bg-amber-600 text-white text-xs font-black rounded-xl">Salva Aperto</button>
             </div>
         </div>
     </div>
 
-    <!-- Navigazione Mobile Inferiore Ingrandita -->
-    <nav class="mobile-nav flex justify-around items-center py-3 text-gray-500 text-xs font-bold">
+    <!-- NAVIGAZIONE MOBILE INFERIORE -->
+    <nav class="mobile-nav flex justify-around items-center py-2.5 text-gray-500 text-xs font-bold">
         <button onclick="switchTab('dispensa', this)" class="nav-btn flex flex-col items-center text-emerald-600">
-            <i class="fa-solid fa-box-open text-2xl mb-1"></i> Dispensa
+            <i class="fa-solid fa-box-open text-xl mb-0.5"></i> Dispensa
         </button>
         <button onclick="switchTab('ricette', this)" class="nav-btn flex flex-col items-center hover:text-emerald-600">
-            <i class="fa-solid fa-utensils text-2xl mb-1"></i> Ricette
+            <i class="fa-solid fa-utensils text-xl mb-0.5"></i> Ricette
         </button>
         <button onclick="switchTab('menu', this)" class="nav-btn flex flex-col items-center hover:text-emerald-600">
-            <i class="fa-solid fa-calendar-days text-2xl mb-1"></i> Menu
+            <i class="fa-solid fa-calendar-days text-xl mb-0.5"></i> Menu
         </button>
         <button onclick="switchTab('spesa', this)" class="nav-btn flex flex-col items-center hover:text-emerald-600">
-            <i class="fa-solid fa-cart-shopping text-2xl mb-1"></i> Spesa
+            <i class="fa-solid fa-cart-shopping text-xl mb-0.5"></i> Spesa
         </button>
         <button onclick="switchTab('offerte', this)" class="nav-btn flex flex-col items-center hover:text-emerald-600">
-            <i class="fa-solid fa-tags text-2xl mb-1"></i> Offerte
+            <i class="fa-solid fa-tags text-xl mb-0.5"></i> Offerte
         </button>
         <button onclick="switchTab('grafici', this)" class="nav-btn flex flex-col items-center hover:text-emerald-600">
-            <i class="fa-solid fa-chart-pie text-2xl mb-1"></i> Analisi
+            <i class="fa-solid fa-chart-pie text-xl mb-0.5"></i> Analisi
         </button>
     </nav>
 
     <script>
         let pantry = JSON.parse(localStorage.getItem('zerosprechi_pantry')) || [
-            { id: 1, name: "Petto di Pollo", qty: "500g", pezzi: "2 pz", expiry: "2026-11-05" },
-            { id: 2, name: "Zucchine", qty: "300g", pezzi: "4 pz", expiry: "2026-11-02" }
+            { id: 1, name: "Mozzarella", qty: "100g", pezzi: 2, expiry: "2026-11-14" },
+            { id: 2, name: "Petto di Pollo", qty: "500g", pezzi: 1, expiry: "2026-11-05" },
+            { id: 3, name: "Zucchine", qty: "300g", pezzi: 4, expiry: "2026-11-02" }
         ];
 
         let openedProducts = JSON.parse(localStorage.getItem('zerosprechi_opened')) || [
@@ -264,14 +310,14 @@
             { id: 1, name: "Olio Extravergine d'Oliva", checked: false }
         ];
 
-        let weeklyMenuData = [
-            { day: "Lunedì", lunch: "Petto di Pollo e Zucchine", dinner: "Vellutata di verdure" },
-            { day: "Martedì", lunch: "Salmone con verdure", dinner: "Uova strapazzate" },
-            { day: "Mercoledì", lunch: "Pasta Integrale al pomodoro", dinner: "Formaggio fresco e insalata" },
-            { day: "Giovedì", lunch: "Bocconcini di tacchino", dinner: "Zuppa di legumi" },
-            { day: "Venerdì", lunch: "Merluzzo al vapore", dinner: "Ricotta e verdure" },
-            { day: "Sabato", lunch: "Pizza integrale light", dinner: "Insalatona con tonno" },
-            { day: "Domenica", lunch: "Arrosto leggero", dinner: "Minestrone" }
+        let weeklyMenuData = JSON.parse(localStorage.getItem('zerosprechi_menu')) || [
+            { day: "Lunedì", lunch: "Petto di Pollo e Zucchine", lunchDone: false, dinner: "Vellutata di verdure", dinnerDone: false },
+            { day: "Martedì", lunch: "Salmone con verdure", lunchDone: false, dinner: "Uova strapazzate", dinnerDone: false },
+            { day: "Mercoledì", lunch: "Pasta Integrale al pomodoro", lunchDone: false, dinner: "Formaggio fresco e insalata", dinnerDone: false },
+            { day: "Giovedì", lunch: "Bocconcini di tacchino", lunchDone: false, dinner: "Zuppa di legumi", dinnerDone: false },
+            { day: "Venerdì", lunch: "Merluzzo al vapore", lunchDone: false, dinner: "Ricotta e verdure", dinnerDone: false },
+            { day: "Sabato", lunch: "Pizza integrale light", lunchDone: false, dinner: "Insalatona con tonno", dinnerDone: false },
+            { day: "Domenica", lunch: "Arrosto leggero", lunchDone: false, dinner: "Minestrone", dinnerDone: false }
         ];
 
         const offers = [
@@ -280,9 +326,8 @@
             { name: "Pastina d'orzo per bambini", price: "€ 0,89", discount: "-15%", tag: "Ideale per Camilla" }
         ];
 
-        // STATO WIZARD VOCALE (4 PASSI)
-        let wizardCurrentStep = 1; // 1: Nome, 2: Quantità, 3: Scadenza, 4: Pezzi
-        let wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: '' };
+        let wizardCurrentStep = 1;
+        let wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1 };
         let recognition = null;
         let expenseChartInstance = null;
 
@@ -290,6 +335,7 @@
             localStorage.setItem('zerosprechi_pantry', JSON.stringify(pantry));
             localStorage.setItem('zerosprechi_opened', JSON.stringify(openedProducts));
             localStorage.setItem('zerosprechi_shopping', JSON.stringify(shoppingList));
+            localStorage.setItem('zerosprechi_menu', JSON.stringify(weeklyMenuData));
         }
 
         function switchTab(tabId, btnElement) {
@@ -308,13 +354,14 @@
             if(tabId === 'grafici') renderChart('giornaliero');
         }
 
+        // RENDER DISPENSA CON TASTO MODIFICA
         function renderPantry() {
             const container = document.getElementById('pantryList');
             document.getElementById('pantryCount').innerText = pantry.length;
             container.innerHTML = '';
 
             if(pantry.length === 0) {
-                container.innerHTML = '<p class="text-base text-gray-400 text-center py-6 font-bold">La dispensa è vuota.</p>';
+                container.innerHTML = '<p class="text-sm text-gray-400 text-center py-6 font-bold">La dispensa è vuota.</p>';
                 return;
             }
 
@@ -322,15 +369,20 @@
 
             pantry.forEach((item, index) => {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-200 text-base">
-                        <div class="space-y-1">
-                            <div class="font-black text-gray-800 text-lg">${item.name}</div>
-                            <div class="text-gray-600 text-sm">Qtà: <b>${item.qty}</b> | Pezzi: <b>${item.pezzi || '1 pz'}</b></div>
-                            <div class="text-xs text-orange-600 font-black">Scadenza: ${formatItalianDate(item.expiry)}</div>
+                    <div class="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-sm">
+                        <div class="space-y-0.5">
+                            <div class="font-black text-gray-800 text-base">${item.name}</div>
+                            <div class="text-gray-600 text-xs">Singolo: <b>${item.qty}</b> | Disponibili: <span class="bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-md">${item.pezzi} pz</span></div>
+                            <div class="text-[11px] text-orange-600 font-bold">Scadenza: ${formatItalianDate(item.expiry)}</div>
                         </div>
-                        <button onclick="deletePantryItem(${index})" class="text-red-500 hover:text-red-700 p-2 text-2xl">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <div class="flex gap-1">
+                            <button onclick="openEditPantryModal(${index})" class="text-blue-600 hover:text-blue-800 p-2 text-lg">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deletePantryItem(${index})" class="text-red-500 hover:text-red-700 p-2 text-lg">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             });
@@ -341,6 +393,148 @@
             renderWeeklyMenu();
         }
 
+        // MODIFICA SINGOLA VOCE IN DISPENSA
+        function openEditPantryModal(index) {
+            const item = pantry[index];
+            document.getElementById('editPantryIndex').value = index;
+            document.getElementById('editPantryName').value = item.name;
+            document.getElementById('editPantryQty').value = item.qty;
+            document.getElementById('editPantryPezzi').value = item.pezzi || 1;
+            document.getElementById('editPantryExpiry').value = item.expiry;
+            document.getElementById('editPantryModal').classList.remove('hidden');
+        }
+
+        function closeEditPantryModal() {
+            document.getElementById('editPantryModal').classList.add('hidden');
+        }
+
+        function saveEditPantry() {
+            const index = document.getElementById('editPantryIndex').value;
+            pantry[index].name = document.getElementById('editPantryName').value.trim();
+            pantry[index].qty = document.getElementById('editPantryQty').value.trim();
+            pantry[index].pezzi = parseInt(document.getElementById('editPantryPezzi').value) || 1;
+            pantry[index].expiry = document.getElementById('editPantryExpiry').value;
+
+            closeEditPantryModal();
+            renderPantry();
+            showNotification("Voce modificata correttamente!");
+        }
+
+        // RENDER MENU CON SPUNTA CONFERMA E MODIFICA AL VOLO
+        function renderWeeklyMenu() {
+            const container = document.getElementById('weeklyMenuContainer');
+            container.innerHTML = '';
+
+            let openedNote = "";
+            if(openedProducts.length > 0) {
+                openedNote = `<div class="bg-amber-100 text-amber-900 p-3 rounded-2xl text-xs font-black mb-2">⚡ Priorità consumare aperti: ${openedProducts.map(p=>p.name).join(', ')}</div>`;
+            }
+
+            container.innerHTML = openedNote;
+
+            weeklyMenuData.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-xs space-y-2">
+                        <div class="font-black text-emerald-800 text-sm border-b pb-1 flex justify-between items-center">
+                            <span>${item.day}</span>
+                        </div>
+
+                        <!-- PRANZO -->
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                <input type="checkbox" ${item.lunchDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'lunch')" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                <span class="${item.lunchDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
+                                    Pranzo: <b>${item.lunch}</b>
+                                </span>
+                            </label>
+                            <button onclick="openCustomMealModal(${index}, 'lunch')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">
+                                ✏️ Cambia
+                            </button>
+                        </div>
+
+                        <!-- CENA -->
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-100">
+                            <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                <input type="checkbox" ${item.dinnerDone ? 'checked' : ''} onchange="toggleMealDone(${index}, 'dinner')" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500">
+                                <span class="${item.dinnerDone ? 'line-through text-gray-400' : 'text-gray-800 font-bold'} text-xs">
+                                    Cena: <b>${item.dinner}</b>
+                                </span>
+                            </label>
+                            <button onclick="openCustomMealModal(${index}, 'dinner')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg text-[10px]">
+                                ✏️ Cambia
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // CONFERMA SPUNTA PASTO -> SCALA DALLA DISPENSA
+        function toggleMealDone(dayIndex, mealType) {
+            const isDone = mealType === 'lunch' ? !weeklyMenuData[dayIndex].lunchDone : !weeklyMenuData[dayIndex].dinnerDone;
+            if (mealType === 'lunch') weeklyMenuData[dayIndex].lunchDone = isDone;
+            else weeklyMenuData[dayIndex].dinnerDone = isDone;
+
+            if (isDone) {
+                const mealText = mealType === 'lunch' ? weeklyMenuData[dayIndex].lunch : weeklyMenuData[dayIndex].dinner;
+                deductIngredientsFromPantry(mealText);
+                showNotification(`Pasto confermato! Ingredienti scalati dalla dispensa.`);
+            }
+
+            renderWeeklyMenu();
+        }
+
+        // SCALA INGREDIENTI DALLA DISPENSA
+        function deductIngredientsFromPantry(mealText) {
+            const lowerMeal = mealText.toLowerCase();
+
+            pantry.forEach((item, idx) => {
+                if (lowerMeal.includes(item.name.toLowerCase())) {
+                    if (item.pezzi > 1) {
+                        item.pezzi -= 1; // Scala 1 pezzo
+                    } else {
+                        pantry.splice(idx, 1); // Rimuove se finiti i pezzi
+                    }
+                }
+            });
+
+            renderPantry();
+        }
+
+        // MODIFICA PASTO CUCINATO AL VOLO
+        function openCustomMealModal(dayIndex, mealType) {
+            document.getElementById('customMealDayIndex').value = dayIndex;
+            document.getElementById('customMealType').value = mealType;
+            document.getElementById('customMealDesc').value = '';
+            document.getElementById('customMealModal').classList.remove('hidden');
+        }
+
+        function closeCustomMealModal() {
+            document.getElementById('customMealModal').classList.add('hidden');
+        }
+
+        function confirmCustomMeal() {
+            const dayIdx = document.getElementById('customMealDayIndex').value;
+            const mealType = document.getElementById('customMealType').value;
+            const desc = document.getElementById('customMealDesc').value.trim();
+
+            if (!desc) return;
+
+            if (mealType === 'lunch') {
+                weeklyMenuData[dayIdx].lunch = desc;
+                weeklyMenuData[dayIdx].lunchDone = true;
+            } else {
+                weeklyMenuData[dayIdx].dinner = desc;
+                weeklyMenuData[dayIdx].dinnerDone = true;
+            }
+
+            deductIngredientsFromPantry(desc);
+            closeCustomMealModal();
+            renderWeeklyMenu();
+            showNotification("Pasto aggiornato e ingredienti scalati dalla dispensa!");
+        }
+
+        // PRODOTTI APERTI
         function renderOpenedProducts() {
             const container = document.getElementById('openedProductsList');
             container.innerHTML = '';
@@ -352,13 +546,13 @@
 
             openedProducts.forEach((item, index) => {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-3.5 rounded-2xl border border-amber-200 text-xs shadow-sm">
+                    <div class="flex justify-between items-center bg-white p-3 rounded-2xl border border-amber-200 text-xs shadow-sm">
                         <div>
-                            <span class="font-black text-amber-900 text-base">${item.name}</span>
-                            <div class="text-gray-500 text-xs">Aperto il: ${formatItalianDate(item.openDate)}</div>
+                            <span class="font-black text-amber-900 text-sm">${item.name}</span>
+                            <div class="text-gray-500 text-[11px]">Aperto il: ${formatItalianDate(item.openDate)}</div>
                             <div class="text-red-600 font-black text-xs mt-0.5">⚠️ Da consumare entro: ${formatItalianDate(item.consumeBy)}</div>
                         </div>
-                        <button onclick="deleteOpenedProduct(${index})" class="text-amber-700 hover:text-red-600 p-2 font-black text-xl">
+                        <button onclick="deleteOpenedProduct(${index})" class="text-amber-700 hover:text-red-600 p-2 font-black text-lg">
                             <i class="fa-solid fa-check"></i>
                         </button>
                     </div>
@@ -394,10 +588,10 @@
             renderPantry();
         }
 
-        // --- WIZARD VOCALE A 4 PASSI (NOME -> QUANTITÀ -> SCADENZA -> PEZZI) ---
+        // --- WIZARD VOCALE SEQUENZIALE ---
         function startVoiceWizard() {
             wizardCurrentStep = 1;
-            wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: '' };
+            wizardTempProduct = { name: '', qty: '', expiry: '', pezzi: 1 };
             updateWizardStepUI();
             document.getElementById('voiceWizardModal').classList.remove('hidden');
             setTimeout(() => listenCurrentStep(), 400);
@@ -412,12 +606,12 @@
             if (wizardCurrentStep === 1) {
                 badge.innerText = "PASSO 1 DI 4";
                 title.innerText = "Detti il NOME del prodotto";
-                subtitle.innerText = "Dì 'SALTA' per passare oltre";
+                subtitle.innerText = "Dì 'SALTA' per saltare";
                 stepVal.innerText = wizardTempProduct.name || "In attesa della voce...";
             } else if (wizardCurrentStep === 2) {
                 badge.innerText = "PASSO 2 DI 4";
-                title.innerText = "Detti la QUANTITÀ";
-                subtitle.innerText = "Es. '200 grammi', '1 litro' (o 'SALTA')";
+                title.innerText = "Detti la QUANTITÀ singola";
+                subtitle.innerText = "Es. '100 grammi', '1 litro' (o 'SALTA')";
                 stepVal.innerText = wizardTempProduct.qty || "In attesa della voce...";
             } else if (wizardCurrentStep === 3) {
                 badge.innerText = "PASSO 3 DI 4";
@@ -426,9 +620,9 @@
                 stepVal.innerText = wizardTempProduct.expiry ? formatItalianDate(wizardTempProduct.expiry) : "In attesa della voce...";
             } else if (wizardCurrentStep === 4) {
                 badge.innerText = "PASSO 4 DI 4";
-                title.innerText = "Detti il NUMERO PEZZI";
-                subtitle.innerText = "Es. '2 pezzi', '1 scatola' (o 'SALTA')";
-                stepVal.innerText = wizardTempProduct.pezzi || "In attesa della voce...";
+                title.innerText = "Detti il NUMERO DI PEZZI";
+                subtitle.innerText = "Es. '2 pezzi', '1 confezione' (o 'SALTA')";
+                stepVal.innerText = wizardTempProduct.pezzi ? `${wizardTempProduct.pezzi} pz` : "In attesa della voce...";
             }
         }
 
@@ -467,21 +661,20 @@
 
         function processWizardStepInput(text) {
             const lower = text.trim().toLowerCase();
-
-            // Riconoscimento comando SALTA / AVANTI / NIENTE
-            const isSkip = lower.includes('salta') || lower.includes('avanti') || lower.includes('niente') || lower.includes('nessuno');
+            const isSkip = lower.includes('salta') || lower.includes('avanti') || lower.includes('niente');
 
             if (wizardCurrentStep === 1) {
                 wizardTempProduct.name = isSkip ? "Alimento Generico" : (text.charAt(0).toUpperCase() + text.slice(1));
                 nextWizardStep();
             } else if (wizardCurrentStep === 2) {
-                wizardTempProduct.qty = isSkip ? "Quantità standard" : text;
+                wizardTempProduct.qty = isSkip ? "Quantità std" : text;
                 nextWizardStep();
             } else if (wizardCurrentStep === 3) {
                 wizardTempProduct.expiry = isSkip ? getFutureDate(7) : parseExactItalianDate(text);
                 nextWizardStep();
             } else if (wizardCurrentStep === 4) {
-                wizardTempProduct.pezzi = isSkip ? "1 pz" : text;
+                const numMatch = lower.match(/(\d+)/);
+                wizardTempProduct.pezzi = isSkip ? 1 : (numMatch ? parseInt(numMatch[1]) : 1);
                 finishVoiceWizard();
             }
         }
@@ -492,11 +685,8 @@
             setTimeout(() => listenCurrentStep(), 500);
         }
 
-        function skipWizardStep() {
-            processWizardStepInput("salta");
-        }
+        function skipWizardStep() { processWizardStepInput("salta"); }
 
-        // PARSER DATA ITALIANA ACCURATO
         function parseExactItalianDate(text) {
             const lower = text.toLowerCase();
             const months = { 'gennaio':'01', 'febbraio':'02', 'marzo':'03', 'aprile':'04', 'maggio':'05', 'giugno':'06', 'luglio':'07', 'agosto':'08', 'settembre':'09', 'ottobre':'10', 'novembre':'11', 'dicembre':'12' };
@@ -506,10 +696,7 @@
 
             let month = '11';
             for (let mName in months) {
-                if (lower.includes(mName)) {
-                    month = months[mName];
-                    break;
-                }
+                if (lower.includes(mName)) { month = months[mName]; break; }
             }
 
             const yearMatch = lower.match(/\b(202\d)\b/);
@@ -518,44 +705,25 @@
             return `${year}-${month}-${day}`;
         }
 
-        function cancelVoiceWizard() {
-            document.getElementById('voiceWizardModal').classList.add('hidden');
-        }
+        function cancelVoiceWizard() { document.getElementById('voiceWizardModal').classList.add('hidden'); }
 
         function finishVoiceWizard() {
             if(!wizardTempProduct.name) wizardTempProduct.name = "Prodotto";
-            if(!wizardTempProduct.qty) wizardTempProduct.qty = "Standard";
+            if(!wizardTempProduct.qty) wizardTempProduct.qty = "Std";
             if(!wizardTempProduct.expiry) wizardTempProduct.expiry = getFutureDate(7);
-            if(!wizardTempProduct.pezzi) wizardTempProduct.pezzi = "1 pz";
+            if(!wizardTempProduct.pezzi) wizardTempProduct.pezzi = 1;
 
             pantry.push({
                 id: Date.now(),
                 name: wizardTempProduct.name,
                 qty: wizardTempProduct.qty,
-                pezzi: wizardTempProduct.pezzi,
+                pezzi: parseInt(wizardTempProduct.pezzi) || 1,
                 expiry: wizardTempProduct.expiry
             });
 
             cancelVoiceWizard();
             renderPantry();
             showNotification(`✅ Prodotto "${wizardTempProduct.name}" inserito correttamente in dispensa!`);
-        }
-
-        function startMealSwapVoice() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!SpeechRecognition) return;
-
-            const rec = new SpeechRecognition();
-            rec.lang = 'it-IT';
-            rec.start();
-
-            rec.onstart = function() { showNotification("🎙️ Detti cosa stai cucinando oggi..."); };
-            rec.onresult = function(e) {
-                const text = e.results[0][0].transcript;
-                weeklyMenuData[0].lunch = text.charAt(0).toUpperCase() + text.slice(1);
-                renderWeeklyMenu();
-                showNotification(`✨ Programma aggiornato! Oggi cucini: ${text}`);
-            };
         }
 
         function showNotification(msg) {
@@ -569,7 +737,7 @@
             e.preventDefault();
             const name = document.getElementById('itemName').value;
             const qty = document.getElementById('itemQty').value;
-            const pezzi = document.getElementById('itemPezzi').value + " pz";
+            const pezzi = parseInt(document.getElementById('itemPezzi').value) || 1;
             const expiry = document.getElementById('itemExpiry').value;
             pantry.push({ id: Date.now(), name, qty, pezzi, expiry });
             document.getElementById('addItemForm').reset();
@@ -604,27 +772,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function renderWeeklyMenu() {
-            const container = document.getElementById('weeklyMenuContainer');
-            container.innerHTML = '';
-
-            let openedNote = "";
-            if(openedProducts.length > 0) {
-                openedNote = `<div class="bg-amber-100 text-amber-900 p-3 rounded-2xl text-xs font-black mb-2">⚡ Priorità consumare aperti: ${openedProducts.map(p=>p.name).join(', ')}</div>`;
-            }
-
-            container.innerHTML = openedNote;
-
-            weeklyMenuData.forEach((item) => {
-                container.innerHTML += `
-                    <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-xs flex justify-between items-center">
-                        <span class="font-black text-emerald-700 w-16 text-sm">${item.day}</span>
-                        <span class="text-gray-800 flex-1 ml-2 text-xs">Pranzo: <b>${item.lunch}</b> | Cena: <b>${item.dinner}</b></span>
-                    </div>
-                `;
-            });
         }
 
         function generateWeeklyMenu() {
