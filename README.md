@@ -10,8 +10,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCode.js per generare il QR code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -57,7 +55,7 @@
             <p class="text-[11px] text-emerald-100 font-semibold">Martino • Valentina • Camilla</p>
         </div>
         <button onclick="openSyncModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-2 rounded-xl font-bold flex items-center gap-1.5 shadow">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Backup & QR
+            <i class="fa-solid fa-cloud-arrow-up"></i> Backup Dati
         </button>
     </header>
 
@@ -67,23 +65,18 @@
         <span id="successText">Fatto!</span>
     </div>
 
-    <!-- MODALE BACKUP & QR CODE -->
+    <!-- MODALE BACKUP -->
     <div id="syncModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl text-center">
-            <h3 class="font-black text-lg text-gray-800"><i class="fa-solid fa-qrcode text-emerald-600"></i> Condividi & Sincronizza</h3>
-            <p class="text-xs text-gray-500">Inquadra questo QR code con un altro smartphone per aprire l'app aggiornata:</p>
+            <h3 class="font-black text-lg text-gray-800"><i class="fa-solid fa-cloud text-emerald-600"></i> Backup & Sincronizzazione</h3>
+            <p class="text-xs text-gray-500">Esporta i dati e importali sull'altro dispositivo per averli sempre aggiornati:</p>
             
-            <div id="qrcode" class="flex justify-center p-2 bg-gray-50 rounded-2xl border"></div>
-
-            <div class="border-t pt-3 space-y-2">
-                <p class="text-xs font-bold text-gray-700">Backup dei dati su altri dispositivi:</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="exportBackup()" class="bg-blue-600 text-white text-xs font-bold py-2.5 rounded-xl">Esporta Dati</button>
-                    <label class="bg-amber-600 text-white text-xs font-bold py-2.5 rounded-xl cursor-pointer flex items-center justify-center">
-                        Importa Dati
-                        <input type="file" accept=".json" class="hidden" onchange="importBackup(event)">
-                    </label>
-                </div>
+            <div class="border-t pt-3 space-y-3">
+                <button onclick="exportBackup()" class="w-full bg-blue-600 text-white text-sm font-bold py-3 rounded-xl shadow">Esporta Backup Dati (.json)</button>
+                <label class="w-full bg-amber-600 text-white text-sm font-bold py-3 rounded-xl cursor-pointer flex items-center justify-center shadow">
+                    Importa Backup Dati
+                    <input type="file" accept=".json" class="hidden" onchange="importBackup(event)">
+                </label>
             </div>
 
             <button onclick="closeSyncModal()" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-bold text-xs mt-2">Chiudi</button>
@@ -236,6 +229,22 @@
         </section>
 
     </main>
+
+    <!-- MODALE PRODOTTO APERTO -->
+    <div id="openProductModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-5 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl">
+            <h3 class="font-black text-base text-gray-800">Segnala Prodotto Aperto</h3>
+            <input type="text" id="openProdName" placeholder="Nome prodotto (es. Latte, Passata)" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-gray-600">Data di Apertura</label>
+                <input type="date" id="openProdDate" class="w-full border p-2.5 rounded-xl text-sm bg-gray-50">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeOpenProductModal()" class="px-3 py-2 text-xs font-black text-gray-600">Annulla</button>
+                <button onclick="saveOpenProduct()" class="px-4 py-2 bg-amber-600 text-white text-xs font-black rounded-xl">Salva Aperto</button>
+            </div>
+        </div>
+    </div>
 
     <!-- NAVIGAZIONE MOBILE INFERIORE -->
     <nav class="mobile-nav flex justify-around items-center py-3 text-gray-500 text-xs font-bold">
@@ -465,15 +474,8 @@
             showNotification(`Aggiunto in ${cat}!`);
         }
 
-        // BACKUP & QR CODE
-        function openSyncModal() {
-            document.getElementById('syncModal').classList.remove('hidden');
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: window.location.href,
-                width: 160, height: 160
-            });
-        }
+        // BACKUP DATA
+        function openSyncModal() { document.getElementById('syncModal').classList.remove('hidden'); }
         function closeSyncModal() { document.getElementById('syncModal').classList.add('hidden'); }
 
         function exportBackup() {
@@ -537,7 +539,7 @@
         }
 
         function renderRecipes() {
-            document.getElementById('recipesContainer').innerHTML = `<p class="text-xs text-gray-600">Ricette attive per la famiglia caricate.</p>`;
+            document.getElementById('recipesContainer').innerHTML = `<p class="text-xs text-gray-600 font-bold">Ricette attive per la famiglia caricate.</p>`;
         }
         function generateWeeklyMenu() { renderWeeklyMenu(); showNotification("Menu aggiornato!"); }
         function renderShopping() {
